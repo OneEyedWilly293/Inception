@@ -1,0 +1,143 @@
+services:
+
+  # ── MariaDB (database) ───────────────────────────────────────────────
+  mariadb:
+    image: mariadb
+    # Build the image using the Dockerfile inside ./requirements/mariadb
+    build:
+      context: ./requirements/mariadb
+      dockerfile: Dockerfile
+    # Load environment variables from the .env file
+    env_file:
+      - .env
+    # Inject these secrets (passwords) into the container from files in secrets/
+    # Docker mounts them at /run/secrets/<secret_name> inside the container
+    secrets:
+      - db_name
+      - db_user
+      - db_password
+      - db_root_password
+    # Persist the database data on the host machine so it survives container restarts
+    volumes:
+      - mariadb:/var/lib/mysql
+    # All 3 containers communicate over this private internal network
+    networks:
+      - inception
+    # Always restart the container if it stops or crashes
+    restart: always
+    # Docker uses this to know when MariaDB is actually READY (not just started)
+    # Other containers wait for this to pass before they start
+    healthcheck:
+      test: ["CMD-SHELL", "mariadb-admin ping --protocol=tcp --host=127.0.0.1 --port=$MARIADB_PORT -u $(cat ../secrets/db_user) -p$(cat ../secrets/db_password)"]
+      interval: 10s    # check every 10 seconds
+      timeout: 5s      # fail if no response within 5 seconds
+      retries: 10      # try 10 times before marking as unhealthy
+      start_period: 60s # give MariaDB 60 seconds to boot before checks begin
+
+  # ── WordPress (PHP app) ──────────────────────────────────────────────
+  wordpress:
+    image: wordpress
+    build:
+      context: ./requirements/wordpress
+      dockerfile: Dockerfile
+    env_file:
+      - .env
+    secrets:
+      - db_name
+      - db_user
+      - db_password
+      - db_root_password
+      - wp_admin
+      - wp_admin_password
+      - wp_admin_email
+      - wp_user
+      - wp_user_password
+      - wp_user_email
+    # WordPress files stored here — this volume is ALSO shared with the nginx container
+    volumes:
+      - wordpress:/var/www/html
+    networks:
+      - inception
+    # WordPress must NOT start until MariaDB's healthcheck passes
+    depends_on:
+      mariadb:
+        condition: service_healthy
+    restart: always
+    # WordPress is "ready" when wp-login.php exists (WP install completed)
+    healthcheck:
+      test: ["CMD", "test", "-f", "/var/www/html/wp-login.php"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ── NGINX (web server / reverse proxy) ──────────────────────────────
+  nginx:
+    image: nginx
+    build:
+      context: ./requirements/nginx
+      dockerfile: Dockerfile
+    env_file:
+      - .env
+    # Reads WordPress PHP files from the shared volume
+    volumes:
+      - wordpress:/var/www/html
+    networks:
+      - inception
+    # NGINX must NOT start until WordPress's healthcheck passes
+    depends_on:
+      wordpress:
+        condition: service_healthy
+    # Expose ports to the HOST machine (host_port:container_port)
+    ports:
+      - "${NGINX_HTTP_PORT_HOST}:${NGINX_HTTP_PORT}"   # e.g. 80:80
+      - "${NGINX_HTTPS_PORT_HOST}:${NGINX_HTTPS_PORT}" # e.g. 443:443
+    restart: always
+
+# ── Volumes ──────────────────────────────────────────────────────────────
+# These are stored on the HOST machine as plain folders (type: none, o: bind)
+# So your data survives even if you delete the containers
+volumes:
+  wordpress:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /home/${LOGIN}/data/wordpress  # actual folder on your host machine
+  mariadb:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /home/${LOGIN}/data/mariadb    # actual folder on your host machine
+
+# ── Network ──────────────────────────────────────────────────────────────
+# A private bridge network — containers can reach each other by service name
+# e.g. nginx can connect to "wordpress:9000" and "mariadb:3306"
+networks:
+  inception:
+    driver: bridge
+
+# ── Secrets ──────────────────────────────────────────────────────────────
+# Each secret is a plain text file. Docker reads the file and mounts its contents
+# at /run/secrets/<secret_name> inside any container that requests it
+secrets:
+  db_name:
+    file: ../secrets/db_name.txt
+  db_user:
+    file: ../secrets/db_user.txt
+  db_password:
+    file: ../secrets/db_password.txt
+  db_root_password:
+    file: ../secrets/db_root_password.txt
+  wp_admin:
+    file: ../secrets/wp_admin.txt
+  wp_admin_password:
+    file: ../secrets/wp_admin_password.txt
+  wp_admin_email:
+    file: ../secrets/wp_admin_email.txt
+  wp_user:
+    file: ../secrets/wp_user.txt
+  wp_user_password:
+    file: ../secrets/wp_user_password.txt
+  wp_user_email:
+    file: ../secrets/wp_user_email.txt

@@ -1,0 +1,47 @@
+# Run worker processes as www-data, not root (security best practice)
+user www-data;
+
+events {
+    worker_connections 1024;  # max simultaneous connections per worker
+}
+
+http {
+    include /etc/nginx/mime.types;  # so .css files aren't sent as plain text, etc.
+
+    # SERVER BLOCK 1: plain HTTP — redirect everything to HTTPS
+    server {
+        listen ${NGINX_HTTP_PORT};           # e.g. port 80 inside container
+        server_name ${DOMAIN_NAME};          # e.g. yourlogin.42.fr
+
+        # 301 = permanent redirect — tell browser to go to HTTPS instead
+        return 301 https://$host:${NGINX_HTTPS_PORT_HOST}$request_uri;
+    }
+
+    # SERVER BLOCK 2: HTTPS — the real server
+    server {
+        listen ${NGINX_HTTPS_PORT} ssl;      # e.g. port 443
+        server_name ${DOMAIN_NAME};
+
+        ssl_protocols TLSv1.2 TLSv1.3;      # only allow modern, secure TLS versions
+        ssl_certificate /etc/nginx/ssl/certificate.crt;
+        ssl_certificate_key /etc/nginx/ssl/private.key;
+
+        root /var/www/html;                  # WordPress files live here (shared volume)
+        index index.php index.html;
+
+        # If file doesn't exist, pass request to WordPress's index.php
+        # This is how WordPress's URL routing works
+        location / {
+            try_files $uri $uri/ /index.php?$args;
+        }
+
+        # Any .php file gets forwarded to the WordPress container via FastCGI
+        # FastCGI = a protocol for nginx to talk to PHP
+        location ~ \.php$ {
+            try_files $uri =404;
+            include fastcgi.conf;
+            fastcgi_pass wordpress:${PHP_FPM_PORT};  # "wordpress" = Docker service name
+            fastcgi_param HTTPS on;
+        }
+    }
+}

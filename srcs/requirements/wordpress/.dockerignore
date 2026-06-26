@@ -1,0 +1,8 @@
+**/.git          ← don't copy git history into the image
+**/.gitignore    ← don't copy gitignore files
+**/.DS_Store     ← macOS junk files
+**/*.swp         ← Vim swap files
+**/*.swo         ← Vim swap files
+**/*.log         ← log files
+
+wp-content/

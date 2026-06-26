@@ -1,0 +1,16 @@
+[mysqld]
+# 0 = networking is enabled (we need other containers to connect)
+skip-networking=0
+
+# Which IP address to listen on — 0.0.0.0 means accept connections from anywhere
+# (safe here because we're on a private Docker network)
+bind-address=${MARIADB_BIND_ADDRESS}
+
+# Which port to listen on — set to 3306 in .env
+port=${MARIADB_PORT}
+
+# The Unix socket file (used by local clients to talk to MariaDB)
+socket = /run/mysqld/mysqld.sock
+
+# Where the actual database files are stored — this matches our Docker volume
+datadir = /var/lib/mysql

@@ -10,7 +10,7 @@ build:
 up:
 	@mkdir -p /home/$(USER)/data/wordpress
 	@mkdir -p /home/$(USER)/data/mariadb
-	@docker-compose -f srcs/docker-compose.yml up -d
+	@docker-compose -f srcs/docker-compose.yml up -d --build
 
 # Stop and remove containers (but keep volumes and images)
 # --remove-orphans = also remove containers not in docker-compose.yml

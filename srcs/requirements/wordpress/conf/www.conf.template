@@ -1,21 +1,7 @@
 [www]
-# PHP-FPM worker processes run as www-data — same user as nginx
-# so both can read/write the shared volume without permission issues
 user = www-data
 group = www-data
-
-# The port PHP-FPM listens on — nginx forwards .php requests here
-# ${PHP_FPM_PORT} gets replaced by envsubst at startup (set to 9000 in .env)
 listen = ${PHP_FPM_PORT}
-
-# Process management mode: 'ondemand' means worker processes only
-# spawn when a request comes in, then die after being idle
-# This saves RAM compared to 'static' (always-running workers)
 pm = ondemand
-
-# Maximum number of PHP worker processes that can run at once
 pm.max_children = 10
-
-# Each worker process handles this many requests before restarting
-# Prevents memory leaks from accumulating over time
 pm.max_requests = 500

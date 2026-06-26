@@ -47,10 +47,10 @@ RUN curl -fsSL -o /usr/local/bin/wp https://raw.githubusercontent.com/wp-cli/bui
 # The actual files come from the shared volume at runtime — not built into the image
 RUN mkdir -p /var/www/html
 
-# Copy the PHP-FPM pool config template
-# PHP-FPM needs a "pool" config that tells it what port to listen on
+# Copy the PHP-FPM pool config template and remove the default www.conf
 COPY ./conf/www.conf.template /etc/php83/php-fpm.d/www.conf.template
-RUN chmod 644 /etc/php83/php-fpm.d/www.conf.template
+RUN chmod 644 /etc/php83/php-fpm.d/www.conf.template && \
+    rm -f /etc/php83/php-fpm.d/www.conf
 
 # Copy and make executable the startup script
 COPY ./tools/wordpress-script.sh /usr/local/bin/wordpress-script.sh

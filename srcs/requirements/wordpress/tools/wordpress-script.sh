@@ -179,4 +179,6 @@ chmod -R 755 "$WP_PATH"
 # -F = run in the foreground (don't daemonize)
 # exec replaces the shell with php-fpm83 so it becomes PID 1
 echo "==> Running PHP-FPM in the foreground..."
+echo "==> www.conf contents:"	#delete later
+cat /etc/php83/php-fpm.d/www.conf # delte later
 exec php-fpm83 -F

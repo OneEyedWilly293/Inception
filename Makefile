@@ -3,32 +3,32 @@
 all: build
 
 build:
-	@cd srcs && docker-compose build
+	@docker-compose -f srcs/docker-compose.yml build
 
 # Create data folders on the host, then start all containers in the background
 # -d = detached mode (runs in background, terminal is free)
 up:
 	@mkdir -p /home/$(USER)/data/wordpress
 	@mkdir -p /home/$(USER)/data/mariadb
-	@cd srcs && docker-compose up -d
+	@docker-compose -f srcs/docker-compose.yml up -d
 
 # Stop and remove containers (but keep volumes and images)
 # --remove-orphans = also remove containers not in docker-compose.yml
 down:
-	@cd srcs && docker-compose down --remove-orphans
+	@docker-compose -f srcs/docker-compose.yml down --remove-orphans
 
 # Pause containers (keeps them, just stops them)
 stop:
-	@cd srcs && docker-compose stop
+	@docker-compose -f srcs/docker-compose.yml stop
 
 # Resume paused containers
 start:
-	@cd srcs && docker-compose start
+	@docker-compose -f srcs/docker-compose.yml start
 
 # Stop containers AND delete volumes AND delete images
 # Use this when you want a completely fresh rebuild
 clean:
-	@cd srcs && docker-compose down -v --rmi all --remove-orphans
+	@docker-compose -f srcs/docker-compose.yml down -v --rmi all --remove-orphans
 
 # Full nuclear clean — runs clean, then ALSO deletes the data folders
 # on the host (/home/yourlogin/data) — wipes all database and WordPress files
@@ -47,12 +47,12 @@ SERVICES := $(filter-out $(KNOWN_TARGETS),$(MAKECMDGOALS))
 
 # Show running containers and their status
 status:
-	@cd srcs && docker-compose ps $(SERVICES)
+	@docker-compose -f srcs/docker-compose.yml ps $(SERVICES)
 
 # Stream live logs from all containers (or a specific one)
 # --tail=200 = show last 200 lines first
 logs:
-	@cd srcs && docker-compose logs -f --tail=200 $(SERVICES)
+	@docker-compose -f srcs/docker-compose.yml logs -f --tail=200 $(SERVICES)
 
 # This is a catch-all rule — any unknown target (e.g. 'nginx' in 'make logs nginx')
 # becomes a no-op instead of an error

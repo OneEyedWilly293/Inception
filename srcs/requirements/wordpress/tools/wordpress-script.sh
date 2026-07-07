@@ -44,9 +44,9 @@ export MYSQL_ROOT_PASSWORD="$(read_secret db_root_password || printf '%s' "${MYS
 export WP_USER="$(read_secret wp_user                || printf '%s' "${WP_USER:-}")"
 export WP_USER_PASSWORD="$(read_secret wp_user_password || printf '%s' "${WP_USER_PASSWORD:-}")"
 export WP_USER_EMAIL="$(read_secret wp_user_email    || printf '%s' "${WP_USER_EMAIL:-}")"
-export WP_ADMIN="$(read_secret wp_admin              || printf '%s' "${WP_ADMIN:-}")"
-export WP_ADMIN_PASSWORD="$(read_secret wp_admin_password || printf '%s' "${WP_ADMIN_PASSWORD:-}")"
-export WP_ADMIN_EMAIL="$(read_secret wp_admin_email  || printf '%s' "${WP_ADMIN_EMAIL:-}")"
+export WP_ADMIN="$(read_secret wp_boss              || printf '%s' "${WP_ADMIN:-}")"
+export WP_ADMIN_PASSWORD="$(read_secret wp_boss_password || printf '%s' "${WP_ADMIN_PASSWORD:-}")"
+export WP_ADMIN_EMAIL="$(read_secret wp_boss_email  || printf '%s' "${WP_ADMIN_EMAIL:-}")"
 
 # Crash with a clear message if any required value is missing
 : "${MYSQL_DATABASE:?missing db_name}"
@@ -55,9 +55,9 @@ export WP_ADMIN_EMAIL="$(read_secret wp_admin_email  || printf '%s' "${WP_ADMIN_
 : "${WP_USER:?missing wp_user}"
 : "${WP_USER_PASSWORD:?missing wp_user_password}"
 : "${WP_USER_EMAIL:?missing wp_user_email}"
-: "${WP_ADMIN:?missing wp_admin}"
-: "${WP_ADMIN_PASSWORD:?missing wp_admin_password}"
-: "${WP_ADMIN_EMAIL:?missing wp_admin_email}"
+: "${WP_ADMIN:?missing wp_boss}"
+: "${WP_ADMIN_PASSWORD:?missing wp_boss_password}"
+: "${WP_ADMIN_EMAIL:?missing wp_boss_email}"
 : "${DOMAIN_NAME:?missing DOMAIN_NAME in .env}"
 : "${WORDPRESS_TITLE:?missing WORDPRESS_TITLE in .env}"
 

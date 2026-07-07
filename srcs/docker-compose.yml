@@ -128,11 +128,11 @@ secrets:
     file: ../secrets/db_password.txt
   db_root_password:
     file: ../secrets/db_root_password.txt
-  wp_admin:
+  wp_boss:
     file: ../secrets/wp_boss.txt
-  wp_admin_password:
+  wp_boss_password:
     file: ../secrets/wp_boss_password.txt
-  wp_admin_email:
+  wp_boss_email:
     file: ../secrets/wp_boss_email.txt
   wp_user:
     file: ../secrets/wp_user.txt

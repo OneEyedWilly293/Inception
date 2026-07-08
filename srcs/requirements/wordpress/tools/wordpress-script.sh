@@ -159,14 +159,21 @@ fi
 echo "==> Ensuring extra user exists..."
 if wp_as_www_data "wp user get '${WP_USER}' --path='${WP_PATH}' >/dev/null 2>&1"; then
     echo "==> Extra user '${WP_USER}' already exists."
-elif wp_as_www_data "wp user list --field=user_email --path='${WP_PATH}' | grep -Fxq '${WP_USER_EMAIL}'"; then
-    echo "==> A user with email '${WP_USER_EMAIL}' already exists; skipping create."
 else
-    # role=subscriber = regular user (can read/comment, cannot write posts)
     wp_as_www_data "wp user create '${WP_USER}' '${WP_USER_EMAIL}' \
         --user_pass='${WP_USER_PASSWORD}' \
         --role=subscriber \
         --path='${WP_PATH}'"
+    echo "==> Extra user '${WP_USER}' created."
+fi
+
+echo "==> Verifying WordPress users..."
+wp_as_www_data "wp user list --path='${WP_PATH}'"
+
+USER_COUNT="$(wp_as_www_data "wp user list --field=ID --path='${WP_PATH}' | wc -l")"
+if [ \"$USER_COUNT\" -lt 2 ]; then
+    echo "ERROR: WordPress must contain at least 2 users."
+    exit 1
 fi
 
 # ── STEP 13: Final permission fix ────────────────────────────────────

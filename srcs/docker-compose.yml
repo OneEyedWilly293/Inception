@@ -28,7 +28,7 @@ services:
     # Docker uses this to know when MariaDB is actually READY (not just started)
     # Other containers wait for this to pass before they start
     healthcheck:
-      test: ["CMD-SHELL", "mariadb-admin ping --protocol=tcp --host=127.0.0.1 --port=$MARIADB_PORT -u $(cat /run/secrets/db_user) -p$(cat /run/secrets/db_password)"]
+      test: ["CMD-SHELL", "mariadb-admin ping --protocol=tcp --host=127.0.0.1 --port=$MARIADB_PORT --silent"]
       interval: 10s
       timeout: 5s
       retries: 10

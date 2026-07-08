@@ -157,8 +157,13 @@ fi
 # This block checks if the user already exists before creating them
 # (idempotent = safe to run on every container restart)
 echo "==> Ensuring extra user exists..."
+
 if wp_as_www_data "wp user get '${WP_USER}' --path='${WP_PATH}' >/dev/null 2>&1"; then
     echo "==> Extra user '${WP_USER}' already exists."
+
+elif wp_as_www_data "wp user list --field=user_email --path='${WP_PATH}' | grep -Fxq '${WP_USER_EMAIL}'"; then
+    echo "==> A user with email '${WP_USER_EMAIL}' already exists; skipping create."
+
 else
     wp_as_www_data "wp user create '${WP_USER}' '${WP_USER_EMAIL}' \
         --user_pass='${WP_USER_PASSWORD}' \
@@ -170,8 +175,8 @@ fi
 echo "==> Verifying WordPress users..."
 wp_as_www_data "wp user list --path='${WP_PATH}'"
 
-USER_COUNT="$(wp_as_www_data "wp user list --field=ID --path='${WP_PATH}' | wc -l")"
-if [ \"$USER_COUNT\" -lt 2 ]; then
+USER_COUNT="$(wp_as_www_data "wp user list --field=ID --path='${WP_PATH}' | wc -l | tr -d '[:space:]'")"
+if [ "$USER_COUNT" -lt 2 ]; then
     echo "ERROR: WordPress must contain at least 2 users."
     exit 1
 fi

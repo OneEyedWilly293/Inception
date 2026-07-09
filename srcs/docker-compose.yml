@@ -27,12 +27,7 @@ services:
     restart: always
     # Docker uses this to know when MariaDB is actually READY (not just started)
     # Other containers wait for this to pass before they start
-    healthcheck:
-      test: ["CMD-SHELL", "mariadb-admin ping --protocol=tcp --host=127.0.0.1 --port=$MARIADB_PORT --silent"]
-      interval: 10s
-      timeout: 5s
-      retries: 10
-      start_period: 60s
+
   # ── WordPress (PHP app) ──────────────────────────────────────────────
   wordpress:
     image: wordpress

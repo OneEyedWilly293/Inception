@@ -54,8 +54,7 @@ services:
       - inception
     # WordPress must NOT start until MariaDB's healthcheck passes
     depends_on:
-      mariadb:
-        condition: service_healthy
+      - mariadb
     restart: always
     # WordPress is "ready" when wp-login.php exists (WP install completed)
     healthcheck:
